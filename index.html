@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>時間学習アプリ</title>
+  <style>
+    :root {
+      /* ユニバーサルデザインを意識した高コントラストなカラーパレット */
+      --bg-color: #ffffff;
+      --text-color: #1a1a1a;
+      --border-color: #1a1a1a;
+      --primary-color: #003366;
+      --secondary-color: #f0f0f0;
+      --btn-bg: #004d99;
+      --btn-text: #ffffff;
+      --btn-hover: #003366;
+      --clock-bg: #ffffff;
+      --danger-color: #cc0000;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden; /* 手回し中の意図しないスクロールを防止 */
+    }
+
+    /* メインレイアウト */
+    .app-container {
+      display: flex;
+      flex: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      gap: 40px;
+      justify-content: center;
+      align-items: center;
+      flex-direction: row;
+    }
+
+    @media (max-width: 768px) {
+      .app-container {
+        flex-direction: column;
+        gap: 20px;
+        padding: 10px;
+        justify-content: flex-start;
+        overflow-y: auto;
+      }
+    }
+
+    /* セクション共通スタイル */
+    .section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* アナログ時計エリア */
+    .clock-container {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 1 / 1;
+      border: 4px solid var(--border-color);
+      border-radius: 50%;
+      background-color: var(--clock-bg);
+      touch-action: none; /* 時計エリアのスワイプでのスクロールを無効化 */
+      cursor: grab;
+    }
+
+    .clock-container:active {
+      cursor: grabbing;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* デジタル時計表示 */
+    .digital-clock {
+      font-size: 2rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      border: 2px solid var(--border-color);
+      padding: 5px 20px;
+      border-radius: 8px;
+      background-color: var(--secondary-color);
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+
+    /* 指示エリア */
+    .instruction-box {
+      font-size: 2.5rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 20px;
+      border: 4px solid var(--border-color);
+      border-radius: 12px;
+      background-color: var(--secondary-color);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      .instruction-box {
+        font-size: 1.8rem;
+        padding: 10px;
+      }
+    }
+
+    .roulette-val {
+      display: inline-block;
+      min-width: 3ch; /* 文字幅を確保してガタツキを防止 */
+      text-align: center;
+      color: var(--primary-color);
+      background: var(--bg-color);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0 10px;
+    }
+
+    .roulette-dir {
+      display: inline-block;
+      min-width: 2ch;
+      text-align: center;
+      color: var(--primary-color);
+      background: var(--bg-color);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0 10px;
+    }
+
+    /* ボタン群 */
+    .btn {
+      font-size: 1.5rem;
+      font-weight: bold;
+      padding: 15px 40px;
+      border: 4px solid var(--border-color);
+      border-radius: 12px;
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation; /* ダブルタップズーム防止 */
+      transition: background-color 0.2s;
+    }
+
+    .btn:hover {
+      background-color: var(--btn-hover);
+    }
+
+    .btn.stop {
+      background-color: var(--danger-color);
+    }
+
+    .btn.stop:hover {
+      background-color: #990000;
+    }
+
+    /* 設定ボタン (左下) */
+    .settings-btn {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: none;
+      border: none;
+      font-size: 2.5rem;
+      cursor: pointer;
+      color: var(--border-color);
+      padding: 10px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+
+    /* モーダル */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background-color: var(--bg-color);
+      padding: 30px;
+      border-radius: 12px;
+      border: 4px solid var(--border-color);
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .setting-group {
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+    }
+
+    .setting-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .setting-group select,
+    .setting-group input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 1.2rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 24px;
+      height: 24px;
+    }
+
+    .modal-close-btn {
+      width: 100%;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- 時計セクション -->
+    <div class="section">
+      <div class="clock-container" id="clock-container">
+        <svg id="clock-svg" viewBox="0 0 200 200">
+          <circle cx="100" cy="100" r="96" fill="var(--clock-bg)" stroke="var(--border-color)" stroke-width="0"/>
+          <!-- 目盛りと数字はJSで生成 -->
+          <g id="clock-marks"></g>
+          <g id="clock-numbers"></g>
+          
+          <!-- 短針 (時) -->
+          <line id="hour-hand" x1="100" y1="100" x2="100" y2="50" stroke="var(--border-color)" stroke-width="8" stroke-linecap="round" />
+          <!-- 長針 (分) -->
+          <line id="minute-hand" x1="100" y1="100" x2="100" y2="20" stroke="var(--primary-color)" stroke-width="6" stroke-linecap="round" />
+          <!-- 中心点 -->
+          <circle cx="100" cy="100" r="8" fill="var(--border-color)" />
+        </svg>
+      </div>
+      <div id="digital-clock" class="digital-clock hidden">12:00</div>
+      <button id="clock-btn" class="btn">スタート</button>
+    </div>
+
+    <!-- 指示表示セクション -->
+    <div class="section">
+      <div class="instruction-box">
+        の <span id="inst-val" class="roulette-val">--</span> 分 <span id="inst-dir" class="roulette-dir">-</span>
+      </div>
+      <button id="inst-btn" class="btn">スタート</button>
+    </div>
+
+  </div>
+
+  <!-- 設定ボタン -->
+  <button id="settings-btn" class="settings-btn" aria-label="設定を開く">⚙️</button>
+
+  <!-- 設定モーダル -->
+  <div id="settings-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h2 class="modal-title">設定</h2>
+      
+      <div class="setting-group">
+        <label for="set-clock-step">時計の止まる刻み（分）</label>
+        <select id="set-clock-step">
+          <option value="1">1分ごと</option>
+          <option value="5" selected>5分ごと</option>
+          <option value="10">10分ごと</option>
+        </select>
+      </div>
+
+      <div class="setting-group">
+        <label for="set-inst-step">指示の刻み（分）</label>
+        <select id="set-inst-step">
+          <option value="1">1分ごと</option>
+          <option value="5" selected>5分ごと</option>
+          <option value="10">10分ごと</option>
+        </select>
+      </div>
+
+      <div class="setting-group">
+        <label for="set-stop-duration">減速して止まるまでの時間（秒）</label>
+        <input type="number" id="set-stop-duration" min="1" max="10" value="3">
+      </div>
+
+      <div class="setting-group">
+        <label for="set-direction">前後設定</label>
+        <select id="set-direction">
+          <option value="random" selected>ランダム（前・後）</option>
+          <option value="before">「前」のみ</option>
+          <option value="after">「後」のみ</option>
+        </select>
+      </div>
+
+      <div class="setting-group checkbox-group">
+        <input type="checkbox" id="set-show-digital">
+        <label for="set-show-digital" style="margin-bottom: 0;">デジタル表記（00:00）を併記する</label>
+      </div>
+
+      <button id="modal-close-btn" class="btn modal-close-btn">閉じる</button>
+    </div>
+  </div>
+
+  <script>
+    // --- 状態管理 ---
+    const state = {
+      totalMinutes: 0, // 0 〜 719 (12時間 * 60分 - 1)
+      
+      // 時計ルーレットの状態
+      clock: {
+        status: 'stopped', // 'stopped', 'spinning', 'stopping'
+        animId: null,
+        startTime: 0,
+        startMinutes: 0,
+        targetMinutes: 0
+      },
+      
+      // 指示ルーレットの状態
+      inst: {
+        status: 'stopped', // 'stopped', 'spinning', 'stopping'
+        animId: null,
+        startTime: 0,
+        targetVal: 0,
+        targetDir: '',
+        lastUpdate: 0
+      },
+
+      // 手回し操作の状態
+      drag: {
+        isDragging: false,
+        lastAngle: 0
+      }
+    };
+
+    // --- 設定値 ---
+    const settings = {
+      clockStep: 5,
+      instStep: 5,
+      stopDuration: 3000, // ミリ秒
+      directionMode: 'random', // 'random', 'before', 'after'
+      showDigital: false
+    };
+
+    // --- DOM要素の取得 ---
+    const els = {
+      clockContainer: document.getElementById('clock-container'),
+      hourHand: document.getElementById('hour-hand'),
+      minuteHand: document.getElementById('minute-hand'),
+      digitalClock: document.getElementById('digital-clock'),
+      clockBtn: document.getElementById('clock-btn'),
+      
+      instVal: document.getElementById('inst-val'),
+      instDir: document.getElementById('inst-dir'),
+      instBtn: document.getElementById('inst-btn'),
+      
+      settingsBtn: document.getElementById('settings-btn'),
+      settingsModal: document.getElementById('settings-modal'),
+      modalCloseBtn: document.getElementById('modal-close-btn'),
+      
+      setClockStep: document.getElementById('set-clock-step'),
+      setInstStep: document.getElementById('set-inst-step'),
+      setStopDuration: document.getElementById('set-stop-duration'),
+      setDirection: document.getElementById('set-direction'),
+      setShowDigital: document.getElementById('set-show-digital')
+    };
+
+    // --- 初期化 ---
+    function init() {
+      drawClockFace();
+      
+      // 現在時刻を反映 (デモとして12:00に初期化、またはPC時刻でも可)
+      state.totalMinutes = 0; // 12:00は0分とする
+      updateClockDisplay();
+      
+      // イベントリスナーの登録
+      registerEvents();
+    }
+
+    // --- アナログ時計の盤面描画 ---
+    function drawClockFace() {
+      const marksGroup = document.getElementById('clock-marks');
+      const numbersGroup = document.getElementById('clock-numbers');
+      const cx = 100, cy = 100;
+      const radius = 90;
+
+      for (let i = 0; i < 60; i++) {
+        const angle = (i * 6 - 90) * (Math.PI / 180);
+        const isHour = i % 5 === 0;
+        const innerRadius = isHour ? radius - 12 : radius - 5;
+        
+        const x1 = cx + innerRadius * Math.cos(angle);
+        const y1 = cy + innerRadius * Math.sin(angle);
+        const x2 = cx + radius * Math.cos(angle);
+        const y2 = cy + radius * Math.sin(angle);
+        
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', 'var(--border-color)');
+        line.setAttribute('stroke-width', isHour ? '3' : '1');
+        marksGroup.appendChild(line);
+
+        // 数字の描画
+        if (isHour) {
+          const num = i === 0 ? 12 : i / 5;
+          const numRadius = radius - 24;
+          const nx = cx + numRadius * Math.cos(angle);
+          const ny = cy + numRadius * Math.sin(angle);
+          
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.setAttribute('x', nx);
+          text.setAttribute('y', ny);
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('dominant-baseline', 'central');
+          text.setAttribute('fill', 'var(--text-color)');
+          text.setAttribute('font-size', '16');
+          text.setAttribute('font-weight', 'bold');
+          text.textContent = num;
+          numbersGroup.appendChild(text);
+        }
+      }
+    }
+
+    // --- 表示の更新 ---
+    function updateClockDisplay() {
+      // 範囲を 0 〜 719 に収める
+      let totalMins = Math.floor(state.totalMinutes);
+      totalMins = ((totalMins % 720) + 720) % 720;
+      
+      const hours = Math.floor(totalMins / 60);
+      const minutes = totalMins % 60;
+
+      // 針の角度計算 (上を0度とする)
+      const minuteAngle = minutes * 6;
+      // 短針は分の経過によっても少し動く
+      const hourAngle = (hours * 30) + (minutes * 0.5);
+
+      els.minuteHand.setAttribute('transform', `rotate(${minuteAngle}, 100, 100)`);
+      els.hourHand.setAttribute('transform', `rotate(${hourAngle}, 100, 100)`);
+
+      // デジタル表記の更新
+      if (settings.showDigital) {
+        const displayHour = hours === 0 ? 12 : hours;
+        const paddedMin = String(minutes).padStart(2, '0');
+        els.digitalClock.textContent = `${displayHour}:${paddedMin}`;
+      }
+    }
+
+    // --- ユーティリティ: イージング関数 (Cubic Ease Out) ---
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    // --- 時計の手回し機能 ---
+    function getAngleFromCenter(evt) {
+      const rect = els.clockContainer.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      
+      // タッチまたはマウスの座標を取得
+      const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+      const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+
+      // -PI から PI の範囲で角度を取得し、12時方向を0度として正規化
+      let angle = Math.atan2(clientY - cy, clientX - cx) + Math.PI / 2;
+      if (angle < 0) angle += 2 * Math.PI;
+      return angle;
+    }
+
+    function handleDragStart(e) {
+      if (state.clock.status !== 'stopped') return; // 回転中は手回し不可
+      if (e.type === 'touchstart') e.preventDefault(); // スクロール防止
+      
+      state.drag.isDragging = true;
+      state.drag.lastAngle = getAngleFromCenter(e);
+    }
+
+    function handleDragMove(e) {
+      if (!state.drag.isDragging) return;
+      if (e.type === 'touchmove') e.preventDefault();
+
+      const currentAngle = getAngleFromCenter(e);
+      let diff = currentAngle - state.drag.lastAngle;
+
+      // 境界(0度/360度)をまたいだ場合の補正
+      if (diff > Math.PI) diff -= 2 * Math.PI;
+      if (diff < -Math.PI) diff += 2 * Math.PI;
+
+      // 角度の差分を分に変換 (2PI = 60分)
+      const minutesDiff = (diff / (2 * Math.PI)) * 60;
+      
+      state.totalMinutes += minutesDiff;
+      state.drag.lastAngle = currentAngle;
+
+      updateClockDisplay();
+    }
+
+    function handleDragEnd() {
+      state.drag.isDragging = false;
+      // 停止時に分を整数に丸める
+      state.totalMinutes = Math.round(state.totalMinutes);
+      updateClockDisplay();
+    }
+
+    // --- 時計ルーレット ---
+    function toggleClockRoulette() {
+      if (state.clock.status === 'stopped') {
+        // 回転開始
+        state.clock.status = 'spinning';
+        els.clockBtn.textContent = 'ストップ';
+        els.clockBtn.classList.add('stop');
+        state.clock.animId = requestAnimationFrame(animateClock);
+      } else if (state.clock.status === 'spinning') {
+        // 減速開始
+        state.clock.status = 'stopping';
+        els.clockBtn.textContent = '計算中...';
+        els.clockBtn.disabled = true;
+        
+        state.clock.startTime = performance.now();
+        state.clock.startMinutes = state.totalMinutes;
+        
+        // 目標時刻の計算 (現在の針から数時間回した先で、指定の刻みに合う場所)
+        // 最低でも3時間分(180分)は回して止める
+        const extraSpins = 180 + Math.random() * 60; 
+        let target = state.clock.startMinutes + extraSpins;
+        
+        // 刻みに丸める
+        const step = settings.clockStep;
+        target = Math.round(target / step) * step;
+        state.clock.targetMinutes = target;
+      }
+    }
+
+    function animateClock(timestamp) {
+      if (state.clock.status === 'spinning') {
+        // 定速回転 (1フレームあたり約4分進む -> 60fpsで1秒間に4時間進む)
+        state.totalMinutes += 4;
+        updateClockDisplay();
+        state.clock.animId = requestAnimationFrame(animateClock);
+      } else if (state.clock.status === 'stopping') {
+        const elapsed = timestamp - state.clock.startTime;
+        const progress = Math.min(elapsed / settings.stopDuration, 1.0);
+        
+        // イージングを適用
+        const easedProgress = easeOutCubic(progress);
+        state.totalMinutes = state.clock.startMinutes + (state.clock.targetMinutes - state.clock.startMinutes) * easedProgress;
+        
+        updateClockDisplay();
+
+        if (progress < 1.0) {
+          state.clock.animId = requestAnimationFrame(animateClock);
+        } else {
+          // 停止完了
+          state.totalMinutes = state.clock.targetMinutes; // 誤差修正
+          updateClockDisplay();
+          state.clock.status = 'stopped';
+          els.clockBtn.textContent = 'スタート';
+          els.clockBtn.classList.remove('stop');
+          els.clockBtn.disabled = false;
+        }
+      }
+    }
+
+    // --- 指示ルーレット ---
+    function getRandomInstructionValue(step) {
+      // 1〜59の中で、stepの倍数となる値を配列化してランダム抽出
+      const options = [];
+      for (let i = step; i < 60; i += step) {
+        options.push(i);
+      }
+      if (options.length === 0) options.push(1); // 念のため
+      return options[Math.floor(Math.random() * options.length)];
+    }
+
+    function getRandomDirection() {
+      if (settings.directionMode === 'before') return '前';
+      if (settings.directionMode === 'after') return '後';
+      return Math.random() < 0.5 ? '前' : '後';
+    }
+
+    function updateInstDisplay(val, dir) {
+      els.instVal.textContent = val;
+      els.instDir.textContent = dir;
+    }
+
+    function toggleInstRoulette() {
+      if (state.inst.status === 'stopped') {
+        // 回転開始
+        state.inst.status = 'spinning';
+        els.instBtn.textContent = 'ストップ';
+        els.instBtn.classList.add('stop');
+        state.inst.lastUpdate = performance.now();
+        state.inst.animId = requestAnimationFrame(animateInst);
+      } else if (state.inst.status === 'spinning') {
+        // 減速開始
+        state.inst.status = 'stopping';
+        els.instBtn.textContent = '計算中...';
+        els.instBtn.disabled = true;
+        
+        state.inst.startTime = performance.now();
+        state.inst.targetVal = getRandomInstructionValue(settings.instStep);
+        state.inst.targetDir = getRandomDirection();
+      }
+    }
+
+    function animateInst(timestamp) {
+      if (state.inst.status === 'spinning') {
+        // 50msごとにパラパラ変わる
+        if (timestamp - state.inst.lastUpdate > 50) {
+          updateInstDisplay(getRandomInstructionValue(settings.instStep), getRandomDirection());
+          state.inst.lastUpdate = timestamp;
+        }
+        state.inst.animId = requestAnimationFrame(animateInst);
+      } else if (state.inst.status === 'stopping') {
+        const elapsed = timestamp - state.inst.startTime;
+        const progress = Math.min(elapsed / settings.stopDuration, 1.0);
+        
+        // 経過時間に応じて更新間隔を遅くする (50ms -> 600ms)
+        const currentInterval = 50 + 550 * Math.pow(progress, 2);
+
+        if (progress < 1.0) {
+          if (timestamp - state.inst.lastUpdate > currentInterval) {
+            updateInstDisplay(getRandomInstructionValue(settings.instStep), getRandomDirection());
+            state.inst.lastUpdate = timestamp;
+          }
+          state.inst.animId = requestAnimationFrame(animateInst);
+        } else {
+          // 停止完了
+          updateInstDisplay(state.inst.targetVal, state.inst.targetDir);
+          state.inst.status = 'stopped';
+          els.instBtn.textContent = 'スタート';
+          els.instBtn.classList.remove('stop');
+          els.instBtn.disabled = false;
+        }
+      }
+    }
+
+    // --- 設定モーダル関連 ---
+    function openSettings() {
+      els.settingsModal.classList.remove('hidden');
+      // 現在の設定をUIに反映
+      els.setClockStep.value = settings.clockStep;
+      els.setInstStep.value = settings.instStep;
+      els.setStopDuration.value = settings.stopDuration / 1000;
+      els.setDirection.value = settings.directionMode;
+      els.setShowDigital.checked = settings.showDigital;
+    }
+
+    function closeSettings() {
+      // UIの値を設定に反映
+      settings.clockStep = parseInt(els.setClockStep.value, 10);
+      settings.instStep = parseInt(els.setInstStep.value, 10);
+      
+      let dur = parseFloat(els.setStopDuration.value);
+      if (isNaN(dur) || dur < 1) dur = 1;
+      if (dur > 10) dur = 10;
+      settings.stopDuration = dur * 1000;
+      
+      settings.directionMode = els.setDirection.value;
+      settings.showDigital = els.setShowDigital.checked;
+
+      // 表示の更新
+      if (settings.showDigital) {
+        els.digitalClock.classList.remove('hidden');
+      } else {
+        els.digitalClock.classList.add('hidden');
+      }
+      updateClockDisplay();
+
+      els.settingsModal.classList.add('hidden');
+    }
+
+    // --- イベントリスナーの登録 ---
+    function registerEvents() {
+      // 時計のドラッグイベント
+      const clockArea = els.clockContainer;
+      
+      // タッチイベント (passive: false で preventDefault を許可)
+      clockArea.addEventListener('touchstart', handleDragStart, { passive: false });
+      clockArea.addEventListener('touchmove', handleDragMove, { passive: false });
+      clockArea.addEventListener('touchend', handleDragEnd);
+      clockArea.addEventListener('touchcancel', handleDragEnd);
+
+      // マウスイベント
+      clockArea.addEventListener('mousedown', handleDragStart);
+      window.addEventListener('mousemove', handleDragMove); // 枠外に出ても追従するためwindowにつける
+      window.addEventListener('mouseup', handleDragEnd);
+
+      // ボタンイベント
+      els.clockBtn.addEventListener('click', toggleClockRoulette);
+      els.instBtn.addEventListener('click', toggleInstRoulette);
+      
+      els.settingsBtn.addEventListener('click', openSettings);
+      els.modalCloseBtn.addEventListener('click', closeSettings);
+
+      // モーダル背景クリックで閉じる
+      els.settingsModal.addEventListener('click', (e) => {
+        if (e.target === els.settingsModal) {
+          closeSettings();
+        }
+      });
+    }
+
+    // アプリ起動
+    window.addEventListener('DOMContentLoaded', init);
+
+  </script>
+</body>
+</html>
