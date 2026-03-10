@@ -8,13 +8,11 @@
     :root {
       /* ユニバーサルデザインを意識した高コントラストなカラーパレット */
       --bg-color: #ffffff;
-      --text-color: #1a1a1a;
-      --border-color: #1a1a1a;
+      --text-color: #000000;
+      --border-color: #000000;
       --primary-color: #003366;
-      --secondary-color: #f0f0f0;
-      --btn-bg: #004d99;
-      --btn-text: #ffffff;
-      --btn-hover: #003366;
+      --btn-color: #cccccc;
+      --btn-hover: #999999;
       --clock-bg: #ffffff;
       --danger-color: #cc0000;
     }
@@ -41,10 +39,10 @@
       display: flex;
       flex: 1;
       width: 100%;
-      max-width: 1200px;
+      max-width: 1000px;
       margin: 0 auto;
-      padding: 20px;
-      gap: 40px;
+      padding: 40px 20px;
+      gap: 60px;
       justify-content: center;
       align-items: center;
       flex-direction: row;
@@ -53,8 +51,8 @@
     @media (max-width: 768px) {
       .app-container {
         flex-direction: column;
-        gap: 20px;
-        padding: 10px;
+        gap: 40px;
+        padding: 20px;
         justify-content: flex-start;
         overflow-y: auto;
       }
@@ -66,7 +64,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 30px;
       width: 100%;
       flex: 1;
     }
@@ -75,10 +73,8 @@
     .clock-container {
       position: relative;
       width: 100%;
-      max-width: 400px;
+      max-width: 350px;
       aspect-ratio: 1 / 1;
-      border: 4px solid var(--border-color);
-      border-radius: 50%;
       background-color: var(--clock-bg);
       touch-action: none; /* 時計エリアのスワイプでのスクロールを無効化 */
       cursor: grab;
@@ -99,10 +95,7 @@
       font-size: 2rem;
       font-weight: bold;
       letter-spacing: 2px;
-      border: 2px solid var(--border-color);
-      padding: 5px 20px;
-      border-radius: 8px;
-      background-color: var(--secondary-color);
+      color: var(--text-color);
     }
     
     .hidden {
@@ -111,76 +104,47 @@
 
     /* 指示エリア */
     .instruction-box {
-      font-size: 2.5rem;
+      font-size: 3rem;
       font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
       gap: 10px;
-      padding: 20px;
-      border: 4px solid var(--border-color);
-      border-radius: 12px;
-      background-color: var(--secondary-color);
-      width: 100%;
-      max-width: 500px;
       text-align: center;
+    }
+
+    .highlight-text {
+      color: var(--text-color);
     }
 
     @media (max-width: 480px) {
       .instruction-box {
-        font-size: 1.8rem;
-        padding: 10px;
+        font-size: 2rem;
       }
     }
 
-    .roulette-val {
-      display: inline-block;
-      min-width: 3ch; /* 文字幅を確保してガタツキを防止 */
-      text-align: center;
-      color: var(--primary-color);
-      background: var(--bg-color);
-      border: 2px solid var(--border-color);
-      border-radius: 8px;
-      padding: 0 10px;
-    }
-
-    .roulette-dir {
-      display: inline-block;
-      min-width: 2ch;
-      text-align: center;
-      color: var(--primary-color);
-      background: var(--bg-color);
-      border: 2px solid var(--border-color);
-      border-radius: 8px;
-      padding: 0 10px;
-    }
-
-    /* ボタン群 */
-    .btn {
-      font-size: 1.5rem;
-      font-weight: bold;
-      padding: 15px 40px;
-      border: 4px solid var(--border-color);
-      border-radius: 12px;
-      background-color: var(--btn-bg);
-      color: var(--btn-text);
+    /* アイコンボタン */
+    .icon-btn {
+      width: 48px;
+      height: 48px;
+      background: none;
+      border: none;
+      color: var(--btn-color);
       cursor: pointer;
-      user-select: none;
-      touch-action: manipulation; /* ダブルタップズーム防止 */
-      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+      transition: color 0.2s;
     }
 
-    .btn:hover {
-      background-color: var(--btn-hover);
+    .icon-btn:hover {
+      color: var(--btn-hover);
     }
 
-    .btn.stop {
-      background-color: var(--danger-color);
-    }
-
-    .btn.stop:hover {
-      background-color: #990000;
+    .icon-btn.stop {
+      color: var(--danger-color);
     }
 
     /* 設定ボタン (左下) */
@@ -190,9 +154,9 @@
       left: 20px;
       background: none;
       border: none;
-      font-size: 2.5rem;
+      font-size: 2rem;
       cursor: pointer;
-      color: var(--border-color);
+      color: #999;
       padding: 10px;
       border-radius: 50%;
       display: flex;
@@ -219,7 +183,7 @@
       background-color: var(--bg-color);
       padding: 30px;
       border-radius: 12px;
-      border: 4px solid var(--border-color);
+      border: 2px solid var(--border-color);
       width: 90%;
       max-width: 500px;
       max-height: 90vh;
@@ -227,17 +191,17 @@
     }
 
     .modal-title {
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       font-weight: bold;
       margin-bottom: 20px;
       text-align: center;
-      border-bottom: 2px solid var(--border-color);
+      border-bottom: 1px solid #ccc;
       padding-bottom: 10px;
     }
 
     .setting-group {
       margin-bottom: 20px;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
     }
 
     .setting-group label {
@@ -250,9 +214,9 @@
     .setting-group input[type="number"] {
       width: 100%;
       padding: 10px;
-      font-size: 1.2rem;
-      border: 2px solid var(--border-color);
-      border-radius: 8px;
+      font-size: 1.1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
 
     .checkbox-group {
@@ -262,13 +226,23 @@
     }
 
     .checkbox-group input[type="checkbox"] {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
     }
 
     .modal-close-btn {
       width: 100%;
       margin-top: 20px;
+      padding: 15px;
+      font-size: 1.2rem;
+      background-color: #eee;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .modal-close-btn:hover {
+      background-color: #ddd;
     }
   </style>
 </head>
@@ -280,29 +254,36 @@
     <div class="section">
       <div class="clock-container" id="clock-container">
         <svg id="clock-svg" viewBox="0 0 200 200">
-          <circle cx="100" cy="100" r="96" fill="var(--clock-bg)" stroke="var(--border-color)" stroke-width="0"/>
           <!-- 目盛りと数字はJSで生成 -->
           <g id="clock-marks"></g>
           <g id="clock-numbers"></g>
           
           <!-- 短針 (時) -->
-          <line id="hour-hand" x1="100" y1="100" x2="100" y2="50" stroke="var(--border-color)" stroke-width="8" stroke-linecap="round" />
+          <line id="hour-hand" x1="100" y1="100" x2="100" y2="50" stroke="var(--border-color)" stroke-width="6" />
           <!-- 長針 (分) -->
-          <line id="minute-hand" x1="100" y1="100" x2="100" y2="20" stroke="var(--primary-color)" stroke-width="6" stroke-linecap="round" />
+          <line id="minute-hand" x1="100" y1="100" x2="100" y2="20" stroke="var(--border-color)" stroke-width="4" />
           <!-- 中心点 -->
-          <circle cx="100" cy="100" r="8" fill="var(--border-color)" />
+          <circle cx="100" cy="100" r="4" fill="var(--border-color)" />
         </svg>
       </div>
       <div id="digital-clock" class="digital-clock hidden">12:00</div>
-      <button id="clock-btn" class="btn">スタート</button>
+      <button id="clock-btn" class="icon-btn" aria-label="スタート">
+        <svg id="clock-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <polygon points="7,4 20,12 7,20" />
+        </svg>
+      </button>
     </div>
 
     <!-- 指示表示セクション -->
     <div class="section">
       <div class="instruction-box">
-        の <span id="inst-val" class="roulette-val">--</span> 分 <span id="inst-dir" class="roulette-dir">-</span>
+        の <span class="highlight-text"><span id="inst-val">--</span>分<span id="inst-dir">-</span></span>
       </div>
-      <button id="inst-btn" class="btn">スタート</button>
+      <button id="inst-btn" class="icon-btn" aria-label="スタート">
+        <svg id="inst-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <polygon points="7,4 20,12 7,20" />
+        </svg>
+      </button>
     </div>
 
   </div>
@@ -403,10 +384,12 @@
       minuteHand: document.getElementById('minute-hand'),
       digitalClock: document.getElementById('digital-clock'),
       clockBtn: document.getElementById('clock-btn'),
+      clockBtnIcon: document.getElementById('clock-btn-icon'),
       
       instVal: document.getElementById('inst-val'),
       instDir: document.getElementById('inst-dir'),
       instBtn: document.getElementById('inst-btn'),
+      instBtnIcon: document.getElementById('inst-btn-icon'),
       
       settingsBtn: document.getElementById('settings-btn'),
       settingsModal: document.getElementById('settings-modal'),
@@ -436,17 +419,29 @@
       const marksGroup = document.getElementById('clock-marks');
       const numbersGroup = document.getElementById('clock-numbers');
       const cx = 100, cy = 100;
-      const radius = 90;
+      const outerRadius = 98; // 外枠の半径
+
+      // 外枠の円を描画
+      const outline = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      outline.setAttribute('cx', cx);
+      outline.setAttribute('cy', cy);
+      outline.setAttribute('r', outerRadius);
+      outline.setAttribute('fill', 'none');
+      outline.setAttribute('stroke', 'var(--border-color)');
+      outline.setAttribute('stroke-width', '1.5');
+      marksGroup.appendChild(outline);
 
       for (let i = 0; i < 60; i++) {
         const angle = (i * 6 - 90) * (Math.PI / 180);
         const isHour = i % 5 === 0;
-        const innerRadius = isHour ? radius - 12 : radius - 5;
+        
+        // 目盛りは外周から内側へ向かって描く
+        const innerRadius = isHour ? outerRadius - 8 : outerRadius - 4;
         
         const x1 = cx + innerRadius * Math.cos(angle);
         const y1 = cy + innerRadius * Math.sin(angle);
-        const x2 = cx + radius * Math.cos(angle);
-        const y2 = cy + radius * Math.sin(angle);
+        const x2 = cx + outerRadius * Math.cos(angle);
+        const y2 = cy + outerRadius * Math.sin(angle);
         
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
         line.setAttribute('x1', x1);
@@ -454,13 +449,13 @@
         line.setAttribute('x2', x2);
         line.setAttribute('y2', y2);
         line.setAttribute('stroke', 'var(--border-color)');
-        line.setAttribute('stroke-width', isHour ? '3' : '1');
+        line.setAttribute('stroke-width', isHour ? '2' : '1');
         marksGroup.appendChild(line);
 
         // 数字の描画
         if (isHour) {
           const num = i === 0 ? 12 : i / 5;
-          const numRadius = radius - 24;
+          const numRadius = outerRadius - 22;
           const nx = cx + numRadius * Math.cos(angle);
           const ny = cy + numRadius * Math.sin(angle);
           
@@ -471,7 +466,6 @@
           text.setAttribute('dominant-baseline', 'central');
           text.setAttribute('fill', 'var(--text-color)');
           text.setAttribute('font-size', '16');
-          text.setAttribute('font-weight', 'bold');
           text.textContent = num;
           numbersGroup.appendChild(text);
         }
@@ -559,18 +553,26 @@
       updateClockDisplay();
     }
 
+    // --- ルーレット用アイコン操作 ---
+    function setPlayIcon(iconEl) {
+      iconEl.innerHTML = '<polygon points="7,4 20,12 7,20" />';
+    }
+    
+    function setStopIcon(iconEl) {
+      iconEl.innerHTML = '<rect x="7" y="7" width="10" height="10" />';
+    }
+
     // --- 時計ルーレット ---
     function toggleClockRoulette() {
       if (state.clock.status === 'stopped') {
         // 回転開始
         state.clock.status = 'spinning';
-        els.clockBtn.textContent = 'ストップ';
+        setStopIcon(els.clockBtnIcon);
         els.clockBtn.classList.add('stop');
         state.clock.animId = requestAnimationFrame(animateClock);
       } else if (state.clock.status === 'spinning') {
         // 減速開始
         state.clock.status = 'stopping';
-        els.clockBtn.textContent = '計算中...';
         els.clockBtn.disabled = true;
         
         state.clock.startTime = performance.now();
@@ -611,7 +613,7 @@
           state.totalMinutes = state.clock.targetMinutes; // 誤差修正
           updateClockDisplay();
           state.clock.status = 'stopped';
-          els.clockBtn.textContent = 'スタート';
+          setPlayIcon(els.clockBtnIcon);
           els.clockBtn.classList.remove('stop');
           els.clockBtn.disabled = false;
         }
@@ -644,14 +646,13 @@
       if (state.inst.status === 'stopped') {
         // 回転開始
         state.inst.status = 'spinning';
-        els.instBtn.textContent = 'ストップ';
+        setStopIcon(els.instBtnIcon);
         els.instBtn.classList.add('stop');
         state.inst.lastUpdate = performance.now();
         state.inst.animId = requestAnimationFrame(animateInst);
       } else if (state.inst.status === 'spinning') {
         // 減速開始
         state.inst.status = 'stopping';
-        els.instBtn.textContent = '計算中...';
         els.instBtn.disabled = true;
         
         state.inst.startTime = performance.now();
@@ -685,7 +686,7 @@
           // 停止完了
           updateInstDisplay(state.inst.targetVal, state.inst.targetDir);
           state.inst.status = 'stopped';
-          els.instBtn.textContent = 'スタート';
+          setPlayIcon(els.instBtnIcon);
           els.instBtn.classList.remove('stop');
           els.instBtn.disabled = false;
         }
