@@ -118,6 +118,17 @@
       color: var(--text-color);
     }
 
+    /* --- 今回追加した部分：前・後をタップで切り替え可能にするためのスタイル --- */
+    #inst-dir {
+      cursor: pointer;
+      user-select: none; /* 連続タップでテキストが選択されるのを防ぐ */
+      transition: color 0.2s;
+    }
+
+    #inst-dir:hover {
+      color: #666666; /* タップできることがわかるように少し色を変える */
+    }
+
     @media (max-width: 480px) {
       .instruction-box {
         font-size: 2rem;
@@ -693,6 +704,21 @@
       }
     }
 
+    // --- 今回追加した部分：「前/後」をタップで切り替える機能 ---
+    function toggleDirection() {
+      // ルーレットが回っている途中や、まだ文字が入っていない時は無効にする
+      if (state.inst.status !== 'stopped' || els.instDir.textContent === '-') {
+        return;
+      }
+
+      // 「前」なら「後」へ、「後」なら「前」へ入れ替える
+      if (els.instDir.textContent === '前') {
+        els.instDir.textContent = '後';
+      } else if (els.instDir.textContent === '後') {
+        els.instDir.textContent = '前';
+      }
+    }
+
     // --- 設定モーダル関連 ---
     function openSettings() {
       els.settingsModal.classList.remove('hidden');
@@ -747,6 +773,9 @@
       // ボタンイベント
       els.clockBtn.addEventListener('click', toggleClockRoulette);
       els.instBtn.addEventListener('click', toggleInstRoulette);
+      
+      // --- 今回追加した部分：前・後をタップした時の処理 ---
+      els.instDir.addEventListener('click', toggleDirection);
       
       els.settingsBtn.addEventListener('click', openSettings);
       els.modalCloseBtn.addEventListener('click', closeSettings);
